@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${FREERTOS_PATH}/FreeRTOS/Source/include",
+                "${FREERTOS_PATH}/FreeRTOS/Source/portable/ThirdParty/GCC/Posix",
+                "${FREERTOS_PATH}/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/utils",
+                "${FREERTOS_PATH}/FreeRTOS/Demo/Common/include",
+                "${FREERTOS_PATH}/FreeRTOS-Plus/Source/FreeRTOS-Plus-Trace/Include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
