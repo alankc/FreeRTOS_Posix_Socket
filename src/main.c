@@ -16,14 +16,18 @@
 /* Local includes. */
 #include "console.h"
 #include "list_of_tasks.h"
-
+#include "communication.h"
 
 int main(void)
 {
     console_init();
 
+    start_socket();
+    set_destination("192.168.0.134", 12345);
+
+
     xTaskCreate(&vTA, "Task A", 1024, NULL, 1, NULL);
-    xTaskCreate(&vTB, "Task B", 1024, NULL, 5, NULL);
+    xTaskCreate(&vTB, "Task B", 1024, NULL, 2, NULL);
 
     vTaskStartScheduler();
 

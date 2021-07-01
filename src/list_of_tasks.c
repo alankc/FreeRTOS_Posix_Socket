@@ -12,86 +12,58 @@
 #include "console.h"
 #include "communication.h"
 
-#include <stdio.h>
-
-#define PORT 8080
-#define MAXLINE 1024
-
 void vTA(void *pvParameters)
 {
-    int sockfd;
-    char buffer[MAXLINE];
-    char *hello = "Hello from server";
-    struct sockaddr_in servaddr, cliaddr;
-
-    // Creating socket file descriptor
-    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-    {
-        perror("socket creation failed");
-        exit(EXIT_FAILURE);
-    }
-
-    memset(&servaddr, 0, sizeof(servaddr));
-    memset(&cliaddr, 0, sizeof(cliaddr));
-
-    // Filling server information
-    servaddr.sin_family = AF_INET; // IPv4
-    servaddr.sin_addr.s_addr = INADDR_ANY;
-    servaddr.sin_port = htons(PORT);
-
-    // Bind the socket with the server address
-    if (bind(sockfd, (const struct sockaddr *)&servaddr,
-             sizeof(servaddr)) < 0)
-    {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
-    }
-
-    int len, n;
-
-    len = sizeof(cliaddr); //len is value/resuslt
-
     for (;;)
     {
-        n = recvfrom(sockfd, (char *)buffer, MAXLINE,
-                     MSG_WAITALL, (struct sockaddr *)&cliaddr,
-                     &len);
-        buffer[n] = '\0';
-        if (n > 0)
-            printf("Server : %s\n", buffer);
+        double r;
+        char t[100];
+        if (receive_raw_message(t, 100))
+        {
+            printf("Server: %s\n", t);
+
+            //Testing if it is a response from the set-operation SET_NA
+            char *ptr = strstr(t, SET_NA);
+            if (ptr != NULL)
+            {
+                sscanf(ptr + strlen(SET_NA), "%lf", &r);
+                printf("Server (%s): %lf\n", SET_NA, r);
+            }
+        }
+
+        /*  Alternatively, if you know the expected message type
+
+        double value = 0;
+        if (receive_message(REQUEST_TA, &value))
+            printf("Server (%s): %lf \n", REQUEST_TA, value);
+
+        */
+
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
 void vTB(void *pvParameters)
 {
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    int sockfd;
-    char buffer[MAXLINE];
-    char *hello = "Hello from client";
-    struct sockaddr_in servaddr;
-
-    // Creating socket file descriptor
-    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-    {
-        perror("socket creation failed");
-        exit(EXIT_FAILURE);
-    }
-
-    memset(&servaddr, 0, sizeof(servaddr));
-
-    // Filling server information
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(PORT);
-    servaddr.sin_addr.s_addr = INADDR_ANY;
-
-    int n, len;
-
+    double i = 1;
     for (;;)
     {
-        printf("Client send: %s\n", hello);
-        sendto(sockfd, (const char *)hello, strlen(hello),
-               MSG_CONFIRM, (const struct sockaddr *)&servaddr,
-               sizeof(servaddr));
+        send_request_message(REQUEST_TA);
+        send_request_message(REQUEST_T);
+        send_request_message(REQUEST_TI);
+        send_request_message(REQUEST_NO);
+        send_request_message(REQUEST_H);
+
+        vTaskDelay(pdMS_TO_TICKS(50));
+
+        send_set_message(SET_NI, i);
+        send_set_message(SET_Q, i);
+        send_set_message(SET_NA, i);
+        send_set_message(SET_NF, i);
+
+        i *= 1.028;
+        printf("Client\n");
+
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

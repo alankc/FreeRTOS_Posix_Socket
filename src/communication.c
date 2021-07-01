@@ -1,92 +1,136 @@
-/********** Code informaation **********/
-/**** Creation date: June 29, 2021 *****/
-/**** Developer: Alan Kunz Cechinel ****/
-/**** e-mail: cechinel.a.k@gmail.com ***/
-/***************************************/
-
 #include "communication.h"
 
-int local_socket()
-{
-    int socket_local;
+#include <FreeRTOS.h>
+#include <semphr.h>
 
-    socket_local = socket(AF_INET, SOCK_DGRAM, 0);
-    if (socket_local < 0)
+SemaphoreHandle_t xSocketMutex;
+
+int sockfd;
+char buffer[BUFFER_SIZE];
+struct sockaddr_in send_addr, receive_addr;
+
+void start_socket()
+{
+    xSocketMutex = xSemaphoreCreateMutex();
+
+    xSemaphoreTake(xSocketMutex, portMAX_DELAY);
+
+    // Creating socket file descriptor
+    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     {
-        perror("local_socket");
-        exit(0);
+        perror("Socket creation failed!!");
+        exit(EXIT_FAILURE);
     }
 
-    return socket_local;
+    xSemaphoreGive(xSocketMutex);
 }
 
-void define_listiner_port(int local_socket, int port)
+void set_destination(char *address, uint32_t port)
 {
-    struct sockaddr_in server; /* Endereço completo do servidor e do cliente */
-    int tam_s;                 /* Tamanho da estrutura servidor */
+    xSemaphoreTake(xSocketMutex, portMAX_DELAY);
 
-    memset((char *)&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = htonl(INADDR_ANY);
-    server.sin_port = htons(port);
+    // Preparing structs
+    memset(&send_addr, 0, sizeof(send_addr));
+    memset(&receive_addr, 0, sizeof(receive_addr));
 
-    tam_s = sizeof(server);
-    if (bind(local_socket, (struct sockaddr *)&server, tam_s) < 0)
+    // Filling information to send msg
+    send_addr.sin_family = AF_INET;
+    send_addr.sin_port = htons(port);
+    send_addr.sin_addr.s_addr = inet_addr(address);
+
+    xSemaphoreGive(xSocketMutex);
+}
+
+void send_message(char *msg)
+{
+    xSemaphoreTake(xSocketMutex, portMAX_DELAY);
+
+    sendto(sockfd, (const char *)msg, strlen(msg),
+           MSG_CONFIRM, (const struct sockaddr *)&send_addr,
+           sizeof(send_addr));
+
+    xSemaphoreGive(xSocketMutex);
+}
+
+void send_request_message(char *token)
+{
+    xSemaphoreTake(xSocketMutex, portMAX_DELAY);
+
+    //The request is composed by its token followed by a zero
+    sprintf(buffer, "%s0", token);
+
+    sendto(sockfd, (const char *)buffer, strlen(buffer),
+           MSG_CONFIRM, (const struct sockaddr *)&send_addr,
+           sizeof(send_addr));
+
+    xSemaphoreGive(xSocketMutex);
+}
+
+void send_set_message(char *token, double value)
+{
+    xSemaphoreTake(xSocketMutex, portMAX_DELAY);
+
+    //The set-operation is composed by its token followed by the chosen number
+    sprintf(buffer, "%s%lf", token, value);
+
+    sendto(sockfd, (const char *)buffer, strlen(buffer),
+           MSG_CONFIRM, (const struct sockaddr *)&send_addr,
+           sizeof(send_addr));
+
+    xSemaphoreGive(xSocketMutex);
+}
+
+int receive_message(char *token, double *read_value)
+{
+    int n, len = sizeof(receive_addr);
+    xSemaphoreTake(xSocketMutex, portMAX_DELAY);
+
+    n = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE,
+                 MSG_WAITALL, (struct sockaddr *)&receive_addr,
+                 &len);
+
+    buffer[n] = '\0';
+
+    if (n > 0)
     {
-        perror("define_listiner_port");
-        exit(0);
+        char *num_ptr;
+        //verify if it has the token
+        num_ptr = strstr(buffer, token);
+        //if it has the token, put the value in read_value
+        if (num_ptr != NULL)
+        {
+            //num_ptr + strlen(token): puts the pointer at the start of the number
+            sscanf(num_ptr + strlen(token), "%lf", read_value);
+            xSemaphoreGive(xSocketMutex);
+            return 1;
+        }
     }
+    // If no datagram has been received or
+    // the received message is not of token type
+    xSemaphoreGive(xSocketMutex);
+    return 0;
 }
 
-struct sockaddr_in destination_address(char *address, int port)
+int receive_raw_message(char *out_buffer, uint32_t buffer_size)
 {
-    struct sockaddr_in server;     /* Endereço do servidor incluindo ip e porta */
-    struct hostent *dest_internet; /* Endereço destino em formato próprio */
-    struct in_addr dest_ip;        /* Endereço destino em formato ip numérico */
+    int n, len = sizeof(receive_addr);
+    xSemaphoreTake(xSocketMutex, portMAX_DELAY);
 
-    if (inet_aton(address, &dest_ip))
-        dest_internet = gethostbyaddr((char *)&dest_ip, sizeof(dest_ip), AF_INET);
-    else
-        dest_internet = gethostbyname(address);
+    n = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE,
+                 MSG_WAITALL, (struct sockaddr *)&receive_addr,
+                 &len);
 
-    if (dest_internet == NULL)
+    buffer[n] = '\0';
+
+    if (n > 0)
     {
-        fprintf(stderr, "Endereço de rede inválido\n");
-        exit(0);
+        for (uint32_t i = 0; i <= n && i < buffer_size; i++)
+            out_buffer[i] = buffer[i];
+
+        xSemaphoreGive(xSocketMutex);
+        return 1;
     }
-
-    memset((char *)&server, 0, sizeof(server));
-    memcpy(&server.sin_addr, dest_internet->h_addr_list[0], sizeof(server.sin_addr));
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-
-    return server;
-}
-
-void send_msg(int local_socket, struct sockaddr_in destination_address, char *msg)
-{
-    if (sendto(local_socket, msg, strlen(msg) + 1, 0, (struct sockaddr *)&destination_address, sizeof(destination_address)) < 0)
-    {
-        perror("send_msg");
-        return;
-    }
-}
-
-int receive_msg(int local_socket, char *buffer, int buffer_size)
-{
-    int bytes_recebidos; /* Número de bytes recebidos */
-
-    /* Espera pela msg de resposta do servidor */
-    bytes_recebidos = recvfrom(local_socket, buffer, buffer_size, 0, NULL, 0);
-    if (bytes_recebidos < 0)
-    {
-        perror("recvfrom");
-    }
-
-    return bytes_recebidos;
-}
-
-int receive_msg_and_adress(int local_socket, char *buffer, int buffer_size, struct sockaddr_in *client_adress, int *size_c)
-{
-
+    // If no datagram has been received or
+    xSemaphoreGive(xSocketMutex);
+    return 0;
 }
