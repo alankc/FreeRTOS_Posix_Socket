@@ -121,17 +121,14 @@ int receive_raw_message(char *out_buffer, uint32_t buffer_size, char blocking)
 
     do
     {
-        n = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE,
+        n = recvfrom(sockfd, (char *)out_buffer, buffer_size,
                      MSG_WAITALL, (struct sockaddr *)&receive_addr,
                      &len);
     } while ((blocking == COMMUNICATION_BLOCKING) && (n <= 0));
 
     if (n > 0)
     {
-        buffer[n] = '\0';
-        for (uint32_t i = 0; i <= n && i < buffer_size; i++)
-            out_buffer[i] = buffer[i];
-
+        out_buffer[n] = '\0';
         xSemaphoreGive(xSocketMutex);
         return 1;
     }
