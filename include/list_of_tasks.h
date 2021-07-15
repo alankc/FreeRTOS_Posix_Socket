@@ -7,6 +7,8 @@
 #ifndef LIST_OF_TASKS_H
 #define LIST_OF_TASKS_H
 
+void create_tasks();
+
 void vTA(void *pvParameters);
 
 void vTB(void *pvParameters);

@@ -25,9 +25,7 @@ int main(void)
     start_socket();
     set_destination("192.168.0.134", 12345);
 
-
-    xTaskCreate(&vTA, "Task A", 1024, NULL, 1, NULL);
-    xTaskCreate(&vTB, "Task B", 1024, NULL, 2, NULL);
+    create_tasks();
 
     vTaskStartScheduler();
 

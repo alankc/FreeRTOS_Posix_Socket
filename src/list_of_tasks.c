@@ -4,65 +4,120 @@
 /**** e-mail: cechinel.a.k@gmail.com ***/
 /***************************************/
 
+//Duas tarefas
+//Usar variáveis globais
+//Usar semáforo
+//uma envia set
+//outra configura o valor das variáveis
+
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 
 /* Local includes. */
 #include "console.h"
 #include "communication.h"
+#include "list_of_tasks.h"
+
+/*used to control*/
+SemaphoreHandle_t xVariablesMutex;
+double ni, q, na, nf;
+
+void create_tasks()
+{
+    xVariablesMutex = xSemaphoreCreateMutex();
+    ni = .1;
+    q = .1;
+    na = .1;
+    nf = .1;
+
+    xTaskCreate(&vTA, "Task A", 1024, NULL, 1, NULL);
+    xTaskCreate(&vTB, "Task B", 1024, NULL, 2, NULL);
+}
 
 void vTA(void *pvParameters)
 {
     for (;;)
     {
-        double r;
-        char t[100];
-        if (receive_raw_message(t, 100))
-        {
-            printf("Server: %s\n", t);
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
+        ni *= 1.01;
+        xSemaphoreGive(xVariablesMutex);
 
-            //Testing if it is a response from the set-operation SET_NA
-            char *ptr = strstr(t, SET_NA);
-            if (ptr != NULL)
-            {
-                sscanf(ptr + strlen(SET_NA), "%lf", &r);
-                printf("Server (%s): %lf\n", SET_NA, r);
-            }
-        }
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
+        q *= 1.01;
+        xSemaphoreGive(xVariablesMutex);
 
-        /*  Alternatively, if you know the expected message type
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
+        na *= 1.01;
+        xSemaphoreGive(xVariablesMutex);
 
-        double value = 0;
-        if (receive_message(REQUEST_TA, &value))
-            printf("Server (%s): %lf \n", REQUEST_TA, value);
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
+        nf *= 1.01;
+        xSemaphoreGive(xVariablesMutex);
 
-        */
-
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
 void vTB(void *pvParameters)
 {
-    double i = 1;
     for (;;)
     {
+        double read;
+
+        /*Sets*/
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
+        send_set_message(SET_NI, ni);
+        console_print("SET_NI sent: %lf\n", ni);
+        xSemaphoreGive(xVariablesMutex);
+        if (receive_message(SET_NI, &read, COMMUNICATION_BLOCKING))
+            console_print("SET_NI received: %lf\n", read);
+
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
+        send_set_message(SET_Q, q);
+        console_print("SET_Q sent: %lf\n", q);
+        xSemaphoreGive(xVariablesMutex);
+        if (receive_message(SET_Q, &read, COMMUNICATION_BLOCKING))
+            console_print("SET_Q received: %lf\n", read);
+
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
+        send_set_message(SET_NA, na);
+        console_print("SET_NA sent: %lf\n", na);
+        xSemaphoreGive(xVariablesMutex);
+        if (receive_message(SET_NA, &read, COMMUNICATION_BLOCKING))
+            console_print("SET_NA received: %lf\n", read);
+
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
+        send_set_message(SET_NF, nf);
+        console_print("SET_NF sent: %lf\n", nf);
+        xSemaphoreGive(xVariablesMutex);
+        if (receive_message(SET_NF, &read, COMMUNICATION_BLOCKING))
+            console_print("SET_NF received: %lf\n\n", read);
+
+
+        /*Requests*/
         send_request_message(REQUEST_TA);
+        if (receive_message(REQUEST_TA, &read, COMMUNICATION_BLOCKING))
+            console_print("REQUEST_TA received: %lf\n", read);
+
         send_request_message(REQUEST_T);
+        if (receive_message(REQUEST_T, &read, COMMUNICATION_BLOCKING))
+            console_print("REQUEST_T received: %lf\n", read);
+
         send_request_message(REQUEST_TI);
+        if (receive_message(REQUEST_TI, &read, COMMUNICATION_BLOCKING))
+            console_print("REQUEST_TI received: %lf\n", read);
+
         send_request_message(REQUEST_NO);
+        if (receive_message(REQUEST_NO, &read, COMMUNICATION_BLOCKING))
+            console_print("REQUEST_NO received: %lf\n", read);
+
         send_request_message(REQUEST_H);
+        if (receive_message(REQUEST_H, &read, COMMUNICATION_BLOCKING))
+            console_print("REQUEST_H received: %lf\n", read);
 
-        vTaskDelay(pdMS_TO_TICKS(50));
-
-        send_set_message(SET_NI, i);
-        send_set_message(SET_Q, i);
-        send_set_message(SET_NA, i);
-        send_set_message(SET_NF, i);
-
-        i *= 1.028;
-        printf("Client\n");
+        console_print("============================\n");
 
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
