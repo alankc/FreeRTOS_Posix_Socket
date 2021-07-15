@@ -80,14 +80,17 @@ void send_set_message(char *token, double value)
     xSemaphoreGive(xSocketMutex);
 }
 
-int receive_message(char *token, double *read_value)
+int receive_message(char *token, double *read_value, char blocking)
 {
     int n, len = sizeof(receive_addr);
     xSemaphoreTake(xSocketMutex, portMAX_DELAY);
 
-    n = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE,
-                 MSG_WAITALL, (struct sockaddr *)&receive_addr,
-                 &len);
+    do
+    {
+        n = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE,
+                     MSG_WAITALL, (struct sockaddr *)&receive_addr,
+                     &len);
+    } while (blocking && (n <= 0));
 
     buffer[n] = '\0';
 
@@ -111,14 +114,17 @@ int receive_message(char *token, double *read_value)
     return 0;
 }
 
-int receive_raw_message(char *out_buffer, uint32_t buffer_size)
+int receive_raw_message(char *out_buffer, uint32_t buffer_size, char blocking)
 {
     int n, len = sizeof(receive_addr);
     xSemaphoreTake(xSocketMutex, portMAX_DELAY);
 
-    n = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE,
-                 MSG_WAITALL, (struct sockaddr *)&receive_addr,
-                 &len);
+    do
+    {
+        n = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE,
+                     MSG_WAITALL, (struct sockaddr *)&receive_addr,
+                     &len);
+    } while (blocking && (n <= 0));
 
     buffer[n] = '\0';
 

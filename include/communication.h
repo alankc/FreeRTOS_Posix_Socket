@@ -43,6 +43,9 @@
 #define SET_NA "ana"
 #define SET_NF "anf"
 
+#define COMMUNICATION_BLOCKING 1
+#define COMMUNICATION_NON_BLOCKING 0
+
 
 /**
  * Creates and starts the client socket
@@ -89,17 +92,19 @@ void send_set_message(char* token, double value);
  *
  * @param token Must use one of the tokens. 
  * @param read_value Value informed by the boiler. 
+ * @param blocking function blocked until receive a message
  * @return 1 if it received a message and found the token in the string. 0 otherwise.
  **/
-int receive_message(char* token, double* read_value);
+int receive_message(char* token, double* read_value, char blocking);
 
 /**
  * Receives a message and puts in the out_buffer.
  *
  * @param out_buffer Buffer to store the message. 
- * @param buffer_size Size of the buffer. 
+ * @param buffer_size Size of the buffer.
+ * @param blocking function blocked until receive a message 
  * @return 1 if it received a message. 0 otherwise.
  **/
-int receive_raw_message(char* out_buffer, uint32_t buffer_size);
+int receive_raw_message(char* out_buffer, uint32_t buffer_size, char blocking);
 
 #endif
