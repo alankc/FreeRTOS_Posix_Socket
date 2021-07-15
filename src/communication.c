@@ -92,10 +92,10 @@ int receive_message(char *token, double *read_value, char blocking)
                      &len);
     } while ((blocking == COMMUNICATION_BLOCKING) && (n <= 0));
 
-    buffer[n] = '\0';
-
     if (n > 0)
     {
+        buffer[n] = '\0';
+
         char *num_ptr;
         //verify if it has the token
         num_ptr = strstr(buffer, token);
@@ -126,10 +126,9 @@ int receive_raw_message(char *out_buffer, uint32_t buffer_size, char blocking)
                      &len);
     } while ((blocking == COMMUNICATION_BLOCKING) && (n <= 0));
 
-    buffer[n] = '\0';
-
     if (n > 0)
     {
+        buffer[n] = '\0';
         for (uint32_t i = 0; i <= n && i < buffer_size; i++)
             out_buffer[i] = buffer[i];
 
