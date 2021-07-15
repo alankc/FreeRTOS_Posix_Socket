@@ -90,7 +90,7 @@ int receive_message(char *token, double *read_value, char blocking)
         n = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE,
                      MSG_WAITALL, (struct sockaddr *)&receive_addr,
                      &len);
-    } while (blocking && (n <= 0));
+    } while ((blocking == COMMUNICATION_BLOCKING) && (n <= 0));
 
     buffer[n] = '\0';
 
@@ -124,7 +124,7 @@ int receive_raw_message(char *out_buffer, uint32_t buffer_size, char blocking)
         n = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE,
                      MSG_WAITALL, (struct sockaddr *)&receive_addr,
                      &len);
-    } while (blocking && (n <= 0));
+    } while ((blocking == COMMUNICATION_BLOCKING) && (n <= 0));
 
     buffer[n] = '\0';
 
