@@ -4,12 +4,6 @@
 /**** e-mail: cechinel.a.k@gmail.com ***/
 /***************************************/
 
-//Duas tarefas
-//Usar variáveis globais
-//Usar semáforo
-//uma envia set
-//outra configura o valor das variáveis
-
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
