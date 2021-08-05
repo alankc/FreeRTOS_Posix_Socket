@@ -1,11 +1,13 @@
 # FreeRTOS Posix Socket
-Universidade Federal de Santa Catarina
+Este repositório contém os arquivos para os alunos iniciarem o terceiro trabalho da disciplina (DAS5306) Programação Concorrente e Sistemas de Tempo Real - Semestre 2021/1 - da Universidade Federal de Santa Catarina.
 
-Disciplina: (DAS5306) Programação Concorrente e Sistemas de Tempo Real - Semestre 2021/1
+Página do professor responsável: http://www.romulosilvadeoliveira.eng.br/discipli/cad-pcstr/cad-pcstr.html
 
-Link para a página do professor: http://www.romulosilvadeoliveira.eng.br/discipli/cad-pcstr/cad-pcstr.html
+Descrição do trabalho (T4): http://www.romulosilvadeoliveira.eng.br/livrotemporeal/Trabalhos/trabalhos.html
 
-Este repositório contém os arquivos para os alunos iniciarem o terceiro trabalho da disciplina.
+Documentação do FreeRTOS: https://www.freertos.org/a00106.html
+
+
 
 ## Pré-requisitos
 Você irá precisar do compilador GCC e algumas bibliotecas.
