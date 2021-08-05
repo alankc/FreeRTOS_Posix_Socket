@@ -15,10 +15,12 @@
 #include "list_of_tasks.h"
 
 /*used to control*/
+SemaphoreHandle_t xVariablesMutex;
 double ni, q, na, nf;
 
 void create_tasks()
 {
+    xVariablesMutex = xSemaphoreCreateMutex();
     ni = .1;
     q = .1;
     na = .1;
@@ -32,21 +34,21 @@ void vTA(void *pvParameters)
 {
     for (;;)
     {
-        
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         ni *= 1.01;
-        
+        xSemaphoreGive(xVariablesMutex);
 
-        
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         q *= 1.01;
-        
+        xSemaphoreGive(xVariablesMutex);
 
-        
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         na *= 1.01;
-        
+        xSemaphoreGive(xVariablesMutex);
 
-        
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         nf *= 1.01;
-        
+        xSemaphoreGive(xVariablesMutex);
 
         vTaskDelay(pdMS_TO_TICKS(500));
     }
@@ -59,31 +61,31 @@ void vTB(void *pvParameters)
         double read;
 
         /*Sets*/
-        
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         send_set_message(SET_NI, ni);
         console_print("SET_NI sent: %lf\n", ni);
-        
+        xSemaphoreGive(xVariablesMutex);
         if (receive_message(SET_NI, &read, COMMUNICATION_BLOCKING))
             console_print("SET_NI received: %lf\n", read);
 
-        
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         send_set_message(SET_Q, q);
         console_print("SET_Q sent: %lf\n", q);
-        
+        xSemaphoreGive(xVariablesMutex);
         if (receive_message(SET_Q, &read, COMMUNICATION_BLOCKING))
             console_print("SET_Q received: %lf\n", read);
 
-        
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         send_set_message(SET_NA, na);
         console_print("SET_NA sent: %lf\n", na);
-        
+        xSemaphoreGive(xVariablesMutex);
         if (receive_message(SET_NA, &read, COMMUNICATION_BLOCKING))
             console_print("SET_NA received: %lf\n", read);
 
-        
+        xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         send_set_message(SET_NF, nf);
         console_print("SET_NF sent: %lf\n", nf);
-        
+        xSemaphoreGive(xVariablesMutex);
         if (receive_message(SET_NF, &read, COMMUNICATION_BLOCKING))
             console_print("SET_NF received: %lf\n\n", read);
 
