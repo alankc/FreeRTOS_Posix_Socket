@@ -15,10 +15,14 @@ Você irá precisar do compilador GCC e algumas bibliotecas.
     Se você estiver no Fedora (acima do 23): dnf install @development-tools
        
 ## Tutorial de Instalação
+Os passos a seguir são válidos tanto para Linux puramente como Linux por WSL.
+
+Caso você estiver usando WSL, os passos devem ser executados dentro do ambiente WSL.
 
 1. Baixar o FreeRTOS 202107.00
     - Link: https://www.freertos.org/a00104.html
     - Extraia o arquivo do FreeRTOS em uma pasta que você não irá modificar
+        - Abra o Ubunto WSL e você poderá acessar as pastas do Ubunto pelo explorer no caminho: \\\\wsl$
 
 2. Abra o terminal e execute os comandos: 
     - cd
