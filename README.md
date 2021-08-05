@@ -8,7 +8,6 @@
 
 2. Execute os comandos:
     - cd
-    - echo export FREERTOS_PATH=caminho/nome_da_pasta_do_freeRTOS >> .bashrc
     - echo export FREERTOS_PATH=caminho/nome_da_pasta_do_freeRTOS >> .profile
     - source .bashrc
     - source .profile
