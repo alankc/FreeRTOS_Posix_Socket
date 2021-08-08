@@ -32,8 +32,14 @@ void create_tasks()
 
 void vTA(void *pvParameters)
 {
+    TickType_t xLastWakeTime;
+    const TickType_t xTime = 100;
+    xLastWakeTime = xTaskGetTickCount();
+
     for (;;)
     {
+        vTaskDelayUntil(&xLastWakeTime, xTime);
+
         xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         ni *= 1.01;
         xSemaphoreGive(xVariablesMutex);
@@ -49,15 +55,19 @@ void vTA(void *pvParameters)
         xSemaphoreTake(xVariablesMutex, portMAX_DELAY);
         nf *= 1.01;
         xSemaphoreGive(xVariablesMutex);
-
-        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
 void vTB(void *pvParameters)
 {
+    TickType_t xLastWakeTime;
+    const TickType_t xTime = 1000;
+    xLastWakeTime = xTaskGetTickCount();
+
     for (;;)
     {
+        vTaskDelayUntil(&xLastWakeTime, xTime);
+
         double read;
 
         /*Sets*/
@@ -89,7 +99,6 @@ void vTB(void *pvParameters)
         if (receive_message(SET_NF, &read, COMMUNICATION_BLOCKING))
             console_print("SET_NF received: %lf\n\n", read);
 
-
         /*Requests*/
         send_request_message(REQUEST_TA);
         if (receive_message(REQUEST_TA, &read, COMMUNICATION_BLOCKING))
@@ -112,7 +121,5 @@ void vTB(void *pvParameters)
             console_print("REQUEST_H received: %lf\n", read);
 
         console_print("============================\n");
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
