@@ -31,6 +31,8 @@ Caso você estiver usando WSL, os passos devem ser executados dentro do ambiente
     - echo export FREERTOS_PATH=caminho_ate_FreeRTOS/nome_da_pasta_do_FreeRTOS >> .profile
         - Se o FreeRTOS estiver na pasta home: echo export FREERTOS_PATH=~/FreeRTOSv202107.00 >> .profile
     - source .profile
+    - Para verificar se funcionou: echo $FREERTOS_PATH
+        - Deve retornar o caminho
 
 3. Baixe este repositório em uma pasta de sua preferência
     - Opção 1: gh repo clone alankc/FreeRTOS_Posix_Socket
