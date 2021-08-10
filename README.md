@@ -44,6 +44,7 @@ Caso você estiver usando WSL, os passos devem ser executados dentro do ambiente
 6. Com o terminal aberto na pasta deste repositório, compile e execute o projeto
     - Compilar: make
     - Executar: ./build/Posix_Socket
+    - Em caso de mudança em arquivos .h, execute: make clean
 
 5. Observação sobre o IP da caldeira
     - Se você estiver usando Linux, o IP pode ser "localhost"
