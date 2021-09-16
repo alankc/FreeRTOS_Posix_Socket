@@ -12,7 +12,7 @@ Documentação do FreeRTOS: https://www.freertos.org/a00106.html
 ## Pré-requisitos
 Você irá precisar do compilador GCC e algumas bibliotecas.
 
-    Se você estiver no Ubunto: sudo apt install build-essential
+    Se você estiver no Ubunto: sudo apt install build-essential libpcap-dev
     Se você estiver no Fedora (abaixo do 23): yum install make automake gcc kernel-devel
     Se você estiver no Fedora (acima do 23): dnf install @development-tools
        
